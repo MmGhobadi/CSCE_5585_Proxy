@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/htmx.org@1.9.9"
+        integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
+        crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tw-elements/dist/css/tw-elements.min.css" />
+    <script src="https://cdn.tailwindcss.com/3.3.0"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                fontFamily: {
+                    sans: ["Roboto", "sans-serif"],
+                    body: ["Roboto", "sans-serif"],
+                    mono: ["ui-monospace", "monospace"],
+                },
+            },
+            corePlugins: {
+                preflight: false,
+            },
+        };
+        
+
+        
+
+    </script>
+
+</head>
+<title>WAFXY a #1 Proxy Tools For Cloud Environment</title>
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        {{embed}}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/tw-elements.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('myChart');
+        var usageLabel = []
+        var usageSize = []
+        const myBarChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: usageLabel,
+            datasets: [{
+              label: 'Bandwidth Usage: ',
+              data: usageSize,
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+        function getBandwidthUsage() {
+            // Define the API URL
+            const apiUrl = '/bandwidth-usage';
+
+            // Make a GET request
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    usageLabel = data.label
+                    usageSize = data.usage
+                    myBarChart.data.datasets[0].data = usageSize
+                    myBarChart.data.labels = usageLabel
+                    myBarChart.update()
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        var myInterval = setInterval(getBandwidthUsage, 1000);
+      
+        
+      </script>
+
+</body>
+
+</html>
