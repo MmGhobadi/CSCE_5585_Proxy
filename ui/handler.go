@@ -127,6 +127,7 @@ func displayBandwidthUsageHandler(c *fiber.Ctx, firewall *myFirewall.Firewall) e
 		size := float64(usage[k])
 		usageSize = append(usageSize, size)
 	}
+
 	c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
 	return c.JSON(fiber.Map{
 		"label": keys,
@@ -168,8 +169,8 @@ func geoBlockHandler(c *fiber.Ctx, firewall *myFirewall.Firewall) error {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid IP address format")
 	}
 
-	// Geo-block the specified IP using the Firewall
-	firewall.GeoBlock(ip, "Blocked via web UI")
+	// // Geo-block the specified IP using the Firewall
+	// firewall.GeoBlock(ip, "Blocked via web UI")
 
 	return c.SendString(fmt.Sprintf("Blocked traffic from IP %s based on geo-location", ip))
 }

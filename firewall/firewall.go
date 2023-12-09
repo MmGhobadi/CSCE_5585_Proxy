@@ -1,6 +1,7 @@
 package firewall
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
 	"net"
@@ -16,7 +17,6 @@ import (
 
 	"github.com/coreos/go-iptables/iptables"
 	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"github.com/oschwald/geoip2-golang"
 	"golang.org/x/time/rate"
 )
@@ -53,7 +53,7 @@ type Firewall struct {
 	ruleBlockCounters map[string]int
 
 	// Bandwidth usage tracking
-	bandwidthUsage          map[string]uint16
+	bandwidthUsage          map[string]float64
 	lastBandwidthTime       time.Time
 	bandwidthUpdateInterval time.Duration
 }
@@ -92,7 +92,7 @@ func NewFirewall(interfaceName string) (*Firewall, error) {
 
 	logRotateChan := make(chan bool)
 	go func() {
-		for range time.Tick(1 * time.Minute) {
+		for range time.Tick(24 * time.Hour) {
 			logRotateChan <- true
 		}
 	}()
@@ -105,14 +105,14 @@ func NewFirewall(interfaceName string) (*Firewall, error) {
 	// Get the network interface by name
 	iface, err := net.InterfaceByName(interfaceName)
 	if err != nil {
-		fmt.Println("Error getting interface by name:", err)
+		fmt.Println("Error getting interface by name:", err.Error())
 		os.Exit(1)
 	}
 
 	// Get the addresses associated with the interface
 	addrs, err := iface.Addrs()
 	if err != nil {
-		fmt.Println("Error getting addresses for interface", iface.Name, ":", err)
+		fmt.Println("Error getting addresses for interface", iface.Name, ":", err.Error())
 		os.Exit(1)
 	}
 
@@ -139,7 +139,7 @@ func NewFirewall(interfaceName string) (*Firewall, error) {
 		destIPCounters:          make(map[string]int),
 		geoCounters:             make(map[string]int),
 		ruleBlockCounters:       make(map[string]int),
-		bandwidthUsage:          make(map[string]uint16),
+		bandwidthUsage:          make(map[string]float64),
 		lastBandwidthTime:       time.Now(),
 		bandwidthUpdateInterval: 1 * time.Second,
 	}, nil
@@ -151,7 +151,7 @@ func (f *Firewall) Start() {
 	for range f.logRotateChan {
 		err := f.rotateLogs()
 		if err != nil {
-			panic(err)
+			panic(err.Error())
 		}
 	}
 }
@@ -182,9 +182,8 @@ func (f *Firewall) handlePacket(packet gopacket.Packet) {
 
 	// log.Printf("[%s] %s:%s -> %s:%s (%s) - %s\n", direction, srcIP, srcPort, dstIP, dstPort, protocol, time.Now().Format(time.RFC3339))
 
-	// Example: Block packets from a specific country (e.g., China)
-	if f.isBlockedCountry(srcIP, "CN") {
-		log.Printf("Dropping packet from blocked country: %s\n", srcIP)
+	// Example: Block packets from a specific country
+	if f.isBlockedCountry(srcIP) {
 		f.ruleBlockCounters["CountryBlock"]++
 		return
 	}
@@ -192,7 +191,7 @@ func (f *Firewall) handlePacket(packet gopacket.Packet) {
 	// Update counters for traffic breakdown
 	err := f.updateTrafficCounters(srcIP, dstIP, protocol)
 	if err != nil {
-		log.Printf("Error updating traffic counters: %s\n", err)
+		log.Printf("Error updating traffic counters: %s\n", err.Error())
 	}
 
 	// Update bandwidth usage
@@ -230,13 +229,13 @@ func (f *Firewall) rotateLogs() error {
 	newLogFileName := fmt.Sprintf("firewall_log_%s.txt", time.Now().Format("2006-01-02"))
 	err := os.Rename(f.logs_path+"current_log.txt", f.logs_path+newLogFileName)
 	if err != nil {
-		log.Printf("Error rotating logs: %s\n", err)
+		log.Printf("Error rotating logs: %s\n", err.Error())
 	}
 
 	// Open a new log file for writing
 	logFile, err := os.OpenFile(f.logs_path+"current_log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Printf("Error opening new log file: %s\n", err)
+		log.Printf("Error opening new log file: %s\n", err.Error())
 		return err
 	}
 
@@ -264,7 +263,7 @@ func (f *Firewall) logBlockedTraffic(sourceIP, destinationIP net.IP, reason stri
 	// Log the entry to the current log file
 	logLine := fmt.Sprintf("[%s] Blocked traffic from %s to %s: %s\n", logEntry.Timestamp, sourceIP, destinationIP, reason)
 	if _, err := f.logFile.WriteString(logLine); err != nil {
-		log.Printf("Error writing to log file: %s\n", err)
+		log.Printf("Error writing to log file: %s\n", err.Error())
 		return err
 	}
 	return nil
@@ -276,14 +275,15 @@ func (f *Firewall) BlockIP(ip net.IP, reason string) (string, error) {
 	// Block traffic from a specific IP
 	err := f.iptables.Insert("filter", "INPUT", 1, "-s", ip.String(), "-j", "DROP")
 	if err != nil {
-		log.Printf("Error blocking IP %s: %s\n", ip, err)
+		log.Printf("Error blocking IP %s: %s\n", ip, err.Error())
 		return "", err
 	}
 
 	// Log the blocked traffic
 	err = f.logBlockedTraffic(ip, nil, reason)
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
+		return "", err
 	}
 	return fmt.Sprintf("Blocked traffic from IP %s", ip), nil
 }
@@ -292,14 +292,15 @@ func (f *Firewall) UnblockIP(ip net.IP, reason string) (string, error) {
 	// Remove the rule blocking traffic from a specific IP
 	err := f.iptables.Delete("filter", "INPUT", "-s", ip.String(), "-j", "DROP")
 	if err != nil {
-		log.Printf("Error unblocking IP %s: %s\n", ip, err)
+		log.Printf("Error unblocking IP %s: %s\n", ip, err.Error())
 		return "", err
 	}
 
 	// Log the unblocked traffic
 	err = f.logBlockedTraffic(ip, nil, reason)
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
+		return "", err
 	}
 
 	return fmt.Sprintf("Unblocked traffic from IP %s", ip), nil
@@ -311,7 +312,7 @@ func (f *Firewall) GetBlockedIPs() (string, error) {
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
-		return "", fmt.Errorf("error running iptables command: %v", err)
+		return "", fmt.Errorf("error running iptables command: %v", err.Error())
 	}
 
 	return string(output), nil
@@ -321,14 +322,14 @@ func (f *Firewall) BlockPort(port int, reason string) (string, error) {
 	// Block traffic on a specific port
 	err := f.iptables.Insert("filter", "INPUT", 1, "-p", fmt.Sprintf("%d", port), "-j", "DROP")
 	if err != nil {
-		log.Printf("Error blocking port %d: %s\n", port, err)
+		log.Printf("Error blocking port %d: %s\n", port, err.Error())
 		return "", err
 	}
 
 	// Log the blocked traffic
 	err = f.logBlockedTraffic(nil, nil, fmt.Sprintf("Blocked traffic on port %d: %s", port, reason))
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 	}
 	return fmt.Sprintf("Blocked traffic on port %d", port), nil
 }
@@ -337,14 +338,14 @@ func (f *Firewall) UnblockPort(port int) (string, error) {
 	// Remove the rule blocking traffic on a specific port
 	err := f.iptables.Delete("filter", "INPUT", "-p", fmt.Sprintf("%d", port), "-j", "DROP")
 	if err != nil {
-		log.Printf("Error unblocking port %d: %s\n", port, err)
+		log.Printf("Error unblocking port %d: %s\n", port, err.Error())
 		return "", err
 	}
 
 	// Log the unblocked traffic
 	err = f.logBlockedTraffic(nil, nil, fmt.Sprintf("Unblocked traffic on port %d", port))
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 	}
 	return fmt.Sprintf("Unblocked traffic on port %d", port), nil
 
@@ -355,14 +356,14 @@ func (f *Firewall) BlockProtocol(protocol string, reason string) (string, error)
 	// Block traffic of a specific protocol
 	err := f.iptables.Insert("filter", "INPUT", 1, "-p", protocol, "-j", "DROP")
 	if err != nil {
-		log.Printf("Error blocking protocol %s: %s\n", protocol, err)
+		log.Printf("Error blocking protocol %s: %s\n", protocol, err.Error())
 		return "", err
 	}
 
 	// Log the blocked traffic
 	err = f.logBlockedTraffic(nil, nil, fmt.Sprintf("Blocked traffic of protocol %s: %s", protocol, reason))
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 	}
 	return fmt.Sprintf("Blocked traffic of protocol %s", protocol), nil
 }
@@ -372,14 +373,14 @@ func (f *Firewall) UnblockProtocol(protocol string) (string, error) {
 	// Unblock traffic of a specific protocol
 	err := f.iptables.Delete("filter", "INPUT", "-p", protocol, "-j", "DROP")
 	if err != nil {
-		log.Printf("Error unblocking protocol %s: %s\n", protocol, err)
+		log.Printf("Error unblocking protocol %s: %s\n", protocol, err.Error())
 		return "", err
 	}
 
 	// Log the unblocked traffic
 	err = f.logBlockedTraffic(nil, nil, fmt.Sprintf("Unblocked traffic of protocol %s", protocol))
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 	}
 	return fmt.Sprintf("Unblocked traffic of protocol %s", protocol), nil
 }
@@ -401,7 +402,7 @@ func (f *Firewall) RateLimitIP(ip net.IP, limit int, duration time.Duration) boo
 		// Log the rate limit action
 		err := f.logBlockedTraffic(ip, nil, fmt.Sprintf("Rate limited traffic from IP %s: %d requests per %s", ip, limit, duration))
 		if err != nil {
-			log.Println(err)
+			log.Println(err.Error())
 		}
 		return true
 	}
@@ -409,41 +410,96 @@ func (f *Firewall) RateLimitIP(ip net.IP, limit int, duration time.Duration) boo
 	return false
 }
 
-func (f *Firewall) GeoBlock(ip net.IP, reason string) bool {
-	// Perform GeoIP lookup
-	record, err := f.geoDB.Country(ip)
+func (f *Firewall) GetBlockedCountries() ([]string, error) {
+
+	countryList := []string{}
+
+	file, err := os.Open(f.db_path + "GeoLite2-Country-Locations-en.csv")
+
+	// Checks for the error
 	if err != nil {
-		log.Printf("Error performing GeoIP lookup: %s\n", err)
-		return false
+		log.Fatal("Error while reading the file", err.Error())
+		return nil, err
 	}
 
-	// If the country code is in the blocklist (e.g., "US")
-	blocklist := []string{"US"} // ****Need to make it dynamic****
-	for _, blockedCode := range blocklist {
-		if record.Country.IsoCode == blockedCode {
-			// Log the reason for blocking
-			fmt.Printf("Blocked traffic from IP %s: Geo-blocked\n", ip)
-			// Log the blocked traffic
-			err := f.logBlockedTraffic(ip, nil, fmt.Sprintf("Blocked traffic from IP %s based on geo-location: %s", ip, reason))
-			if err != nil {
-				log.Println(err)
-			}
-			return true
+	// Closes the file
+	defer file.Close()
+
+	// from the file
+	reader := csv.NewReader(file)
+
+	// ReadAll reads all the records from the CSV file
+	records, err := reader.ReadAll()
+
+	// Checks for the error
+	if err != nil {
+		fmt.Println("Error reading records")
+		return nil, err
+	}
+
+	// Loop to iterate through
+	for _, record := range records {
+		boolValue, err := strconv.ParseBool(record[6])
+		if err != nil {
+			log.Println(err.Error())
+		}
+		if boolValue {
+			countryList = append(countryList, record[4])
 		}
 	}
-
-	return false
+	return countryList, nil
 }
 
+// func (f *Firewall) GeoBlock(ip net.IP, reason string) bool {
+// 	// Perform GeoIP lookup
+// 	record, err := f.geoDB.Country(ip)
+// 	if err != nil {
+// 		log.Printf("Error performing GeoIP lookup: %s\n", err.Error())
+// 		return false
+// 	}
+
+// 	// If the country code is in the blocklist (e.g., "US")
+// 	blocklist, err := f.GetBlockedCountries()
+// 	for _, blockedCode := range blocklist {
+// 		if record.Country.IsoCode == blockedCode {
+// 			// Log the reason for blocking
+// 			fmt.Printf("Blocked traffic from IP %s: Geo-blocked\n", ip)
+// 			// Log the blocked traffic
+// 			err := f.logBlockedTraffic(ip, nil, fmt.Sprintf("Blocked traffic from IP %s based on geo-location: %s", ip, reason))
+// 			if err != nil {
+// 				log.Println(err.Error())
+// 			}
+// 			return true
+// 		}
+// 	}
+
+// 	return false
+// }
+
 // Checks if the source IP belongs to a blocked country
-func (f *Firewall) isBlockedCountry(ip string, countryCode string) bool {
+func (f *Firewall) isBlockedCountry(ip string) bool {
 	record, err := f.geoDB.Country(net.ParseIP(ip))
 	if err != nil {
 		log.Printf("There is an err %s", err.Error())
 		return false
 	}
 
-	return record.Country.IsoCode == countryCode
+	blocklist, err := f.GetBlockedCountries()
+	for _, blockedCode := range blocklist {
+		if record.Country.IsoCode == blockedCode {
+			// Log the reason for blocking
+			// fmt.Printf("Blocked traffic from IP %s based on geo-location", ip)
+			// Log the blocked traffic
+			err := f.logBlockedTraffic(net.ParseIP(ip), nil, fmt.Sprintf("Blocked traffic from IP %s based on geo-location", ip))
+			if err != nil {
+				log.Println(err.Error())
+			}
+			log.Printf("Dropping packet from blocked country: %s , IP: %s\n ", record.Country.Names["en"], ip)
+			return true
+		}
+	}
+
+	return false
 }
 
 // Updates counters for traffic breakdown
@@ -464,47 +520,31 @@ func (f *Firewall) updateTrafficCounters(srcIP, dstIP, protocol string) error {
 
 // Updates bandwidth usage based on packet size
 func (f *Firewall) updateBandwidthUsage(packet gopacket.Packet) {
+
 	if len(f.bandwidthUsage) > 10 {
-		f.bandwidthUsage = make(map[string]uint16)
+		f.bandwidthUsage = make(map[string]float64)
 	}
-	// packetSize := packet.Metadata().CaptureInfo.Length
-	packetSize := f.getTotalLength(packet)
+	packetSize := f.getTotalLength(packet) //KB
+	// packetSize := f.getTotalLength(packet)
 	currentTime := time.Now()
+	index := strconv.Itoa(currentTime.Hour()) + ":" + strconv.Itoa(currentTime.Minute())
+	f.bandwidthUsage[index] += packetSize
 
-	// Check if it's time to update bandwidth usage
-	if currentTime.Sub(f.lastBandwidthTime) >= f.bandwidthUpdateInterval {
+	f.lastBandwidthTime = currentTime
 
-		index := strconv.Itoa(currentTime.Hour()) + ":" + strconv.Itoa(currentTime.Minute())
-		f.bandwidthUsage[index] += packetSize
+	// // Check if it's time to update bandwidth usage
+	// if currentTime.Sub(f.lastBandwidthTime) >= f.bandwidthUpdateInterval {
 
-		f.lastBandwidthTime = currentTime
-	}
+	// 	index := strconv.Itoa(currentTime.Hour()) + ":" + strconv.Itoa(currentTime.Minute())
+	// 	f.bandwidthUsage[index] += packetSize
+
+	// 	f.lastBandwidthTime = currentTime
+	// }
 
 }
 
-func (f *Firewall) getTotalLength(packet gopacket.Packet) uint16 {
-	var (
-		eth  layers.Ethernet
-		ipv4 layers.IPv4
-		ipv6 layers.IPv6
-		tcp  layers.TCP
-		err  error
-	)
-	parser := gopacket.NewDecodingLayerParser(
-		layers.LayerTypeEthernet,
-		&eth,
-		&ipv4,
-		&ipv6,
-		&tcp)
-
-	var layersInPacket []gopacket.LayerType
-
-	err = parser.DecodeLayers(packet.Data(), &layersInPacket)
-	var total_len uint16
-	total_len = 0
-	if err == nil {
-		total_len = ipv4.Length - uint16(ipv4.IHL*4)
-	}
+func (f *Firewall) getTotalLength(packet gopacket.Packet) float64 {
+	total_len := ((float64(packet.Metadata().CaptureInfo.Length) / 8) / 1024)
 	return total_len
 }
 
@@ -529,6 +569,6 @@ func (f *Firewall) getTotalLength(packet gopacket.Packet) uint16 {
 // 	fmt.Println(f.ruleBlockCounters)
 // }
 
-func (f *Firewall) DisplayBandwidthUsage() map[string]uint16 {
+func (f *Firewall) DisplayBandwidthUsage() map[string]float64 {
 	return f.bandwidthUsage
 }

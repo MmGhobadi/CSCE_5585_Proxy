@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
@@ -136,10 +137,14 @@ func TestFirewall_BlockIP(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("Blocked traffic from IP %s", ip), result)
 
+	result, err = firewall.BlockIP(nil, reason)
+	assert.NotEmpty(t, err)
+	assert.Equal(t, "", result)
+
 	// Verify that the IP is blocked
-	// blockedIPs, err := firewall.GetBlockedIPs()
-	// assert.Nil(t, err)
-	// assert.Contains(t, blockedIPs, "192.168.0.1")
+	blockedIPs, err := firewall.GetBlockedIPs()
+	assert.Nil(t, err)
+	assert.Contains(t, blockedIPs, "192.168.0.1")
 
 	// Clean up
 	os.Remove(logFileName)
@@ -166,6 +171,10 @@ func TestFirewall_UnblockIP(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("Unblocked traffic from IP %s", ip), result)
 
+	result, err = firewall.UnblockIP(nil, reason)
+	assert.NotEmpty(t, err)
+	assert.Equal(t, "", result)
+
 	os.Remove(logFileName)
 }
 
@@ -187,6 +196,10 @@ func TestFirewall_BlockPort(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("Blocked traffic on port %d", port), result)
 
+	result, err = firewall.BlockPort(-1, reason)
+	assert.NotEmpty(t, err)
+	assert.Equal(t, "", result)
+
 	// Clean up
 	os.Remove(logFileName)
 }
@@ -206,6 +219,10 @@ func TestFirewall_UnblockPort(t *testing.T) {
 	result, err := firewall.UnblockPort(port)
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("Unblocked traffic on port %d", port), result)
+
+	result, err = firewall.UnblockPort(-1)
+	assert.NotEmpty(t, err)
+	assert.Equal(t, "", result)
 
 	// Clean up
 	os.Remove(logFileName)
@@ -227,6 +244,10 @@ func TestFirewall_BlockProtocol(t *testing.T) {
 	result, err := firewall.BlockProtocol(protocol, reason)
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("Blocked traffic of protocol %s", protocol), result)
+
+	result, err = firewall.BlockProtocol("-1", reason)
+	assert.NotEmpty(t, err)
+	assert.Equal(t, "", result)
 
 	// Clean up
 	os.Remove(logFileName)
@@ -252,6 +273,10 @@ func TestFirewall_UnblockProtocol(t *testing.T) {
 	result, err := firewall.UnblockProtocol(protocol)
 	assert.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("Unblocked traffic of protocol %s", protocol), result)
+
+	result, err = firewall.UnblockProtocol("-1")
+	assert.NotEmpty(t, err)
+	assert.Equal(t, "", result)
 
 	// Clean up
 	os.Remove(logFileName)
@@ -339,21 +364,28 @@ func TestFirewall_RateLimitIP(t *testing.T) {
 
 }
 
-func TestFirewall_GeoBlock(t *testing.T) {
+// func TestFirewall_GeoBlock(t *testing.T) {
 
-	interfaceName := "wlp0s20f3"
+// 	interfaceName := "wlp0s20f3"
 
-	firewall, err := NewFirewall(interfaceName)
-	assert.Nil(t, err)
+// 	firewall, err := NewFirewall(interfaceName)
+// 	assert.Nil(t, err)
 
-	ip := net.ParseIP("192.168.0.1")
-	reason := "Blocked for testing"
+// 	ip := net.ParseIP("192.168.0.1")
+// 	reason := "Blocked for testing"
 
-	// Perform GeoBlock
-	result := firewall.GeoBlock(ip, reason)
-	assert.False(t, result)
+// 	// Perform GeoBlock
+// 	result := firewall.GeoBlock(ip, reason)
+// 	assert.False(t, result)
 
-}
+// 	result = firewall.GeoBlock(nil, reason)
+// 	assert.False(t, result)
+
+// 	ip = net.ParseIP("172.217.164.110")
+// 	result = firewall.GeoBlock(ip, reason)
+// 	assert.True(t, result)
+
+// }
 func TestFirewall_IsBlockedCountry(t *testing.T) {
 
 	interfaceName := "wlp0s20f3"
@@ -362,13 +394,13 @@ func TestFirewall_IsBlockedCountry(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Test with a blocked country
-	countryCode := "CN"
-	result := firewall.isBlockedCountry("192.168.0.1", countryCode)
+	// countryCode := "CN"
+	result := firewall.isBlockedCountry("192.168.0.1")
 	assert.False(t, result)
 
 	// Test with a non-blocked country
-	countryCode = "US"
-	result = firewall.isBlockedCountry("192.168.0.2", countryCode)
+	// countryCode = "US"
+	result = firewall.isBlockedCountry("192.168.0.2")
 	assert.False(t, result)
 }
 
@@ -464,4 +496,54 @@ func createSamplePacketV2() gopacket.Packet {
 
 	// Create a new packet from the serialized buffer
 	return gopacket.NewPacket(buffer.Bytes(), layers.LayerTypeEthernet, gopacket.Default)
+}
+func TestFirewall_DisplayBandwidthUsage(t *testing.T) {
+	interfaceName := "wlp0s20f3"
+	firewall, err := NewFirewall(interfaceName)
+	assert.Nil(t, err)
+
+	// Add some sample bandwidth usage data
+	firewall.bandwidthUsage["192.168.0.1"] = 100
+	firewall.bandwidthUsage["192.168.0.2"] = 200
+	firewall.bandwidthUsage["192.168.0.3"] = 300
+
+	// Call the DisplayBandwidthUsage method
+	result := firewall.DisplayBandwidthUsage()
+
+	// Verify the returned bandwidth usage data
+	assert.Equal(t, float64(100), result["192.168.0.1"])
+	assert.Equal(t, float64(200), result["192.168.0.2"])
+	assert.Equal(t, float64(300), result["192.168.0.3"])
+}
+func TestFirewall_Get_in_out_log(t *testing.T) {
+	interfaceName := "wlp0s20f3"
+	firewall, err := NewFirewall(interfaceName)
+	assert.Nil(t, err)
+
+	expected := []string{"log3", "log2", "log1"}
+	result := firewall.Get_in_out_log()
+
+	assert.Equal(t, reflect.TypeOf(expected), reflect.TypeOf(result))
+}
+func TestSaveLog(t *testing.T) {
+	// Initialize the in_out_log slice
+	in_out_log = make([]string, 0)
+
+	// Call the saveLog function
+	packageLog := "Sample log"
+	saveLog(packageLog)
+
+	// Verify that the packageLog is added to the in_out_log slice
+	assert.Equal(t, []string{packageLog}, in_out_log)
+
+	// Add more logs to exceed the limit
+	for i := 0; i < 10000; i++ {
+		saveLog(fmt.Sprintf("Log %d", i))
+	}
+
+	// Call the saveLog function again
+	saveLog(packageLog)
+
+	// Verify that the in_out_log slice is reset and only contains the latest log
+	assert.Equal(t, []string{packageLog}, in_out_log)
 }

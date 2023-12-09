@@ -1,0 +1,250 @@
+49518,en,AF,Africa,RW,Rwanda,FALSE
+51537,en,AF,Africa,SO,Somalia,FALSE
+69543,en,AS,Asia,YE,Yemen,FALSE
+99237,en,AS,Asia,IQ,Iraq,FALSE
+102358,en,AS,Asia,SA,Saudi Arabia,FALSE
+130758,en,AS,Asia,IR,Iran,FALSE
+146669,en,EU,Europe,CY,Cyprus,FALSE
+149590,en,AF,Africa,TZ,Tanzania,FALSE
+163843,en,AS,Asia,SY,Syria,FALSE
+174982,en,AS,Asia,AM,Armenia,FALSE
+192950,en,AF,Africa,KE,Kenya,FALSE
+203312,en,AF,Africa,CD,Congo,FALSE
+223816,en,AF,Africa,DJ,Djibouti,FALSE
+226074,en,AF,Africa,UG,Uganda,FALSE
+239880,en,AF,Africa,CF,Central African Republic,FALSE
+241170,en,AF,Africa,SC,Seychelles,FALSE
+248816,en,AS,Asia,JO,Hashemite Kingdom of Jordan,FALSE
+272103,en,AS,Asia,LB,Lebanon,FALSE
+285570,en,AS,Asia,KW,Kuwait,FALSE
+286963,en,AS,Asia,OM,Oman,FALSE
+289688,en,AS,Asia,QA,Qatar,FALSE
+290291,en,AS,Asia,BH,Bahrain,FALSE
+290557,en,AS,Asia,AE,United Arab Emirates,FALSE
+294640,en,AS,Asia,IL,Israel,FALSE
+298795,en,AS,Asia,TR,Turkey,FALSE
+337996,en,AF,Africa,ET,Ethiopia,FALSE
+338010,en,AF,Africa,ER,Eritrea,FALSE
+357994,en,AF,Africa,EG,Egypt,FALSE
+366755,en,AF,Africa,SD,Sudan,FALSE
+390903,en,EU,Europe,GR,Greece,FALSE
+433561,en,AF,Africa,BI,Burundi,FALSE
+453733,en,EU,Europe,EE,Estonia,FALSE
+458258,en,EU,Europe,LV,Latvia,FALSE
+587116,en,AS,Asia,AZ,Azerbaijan,FALSE
+597427,en,EU,Europe,LT,Republic of Lithuania,FALSE
+607072,en,EU,Europe,SJ,Svalbard and Jan Mayen,FALSE
+614540,en,AS,Asia,GE,Georgia,FALSE
+617790,en,EU,Europe,MD,Republic of Moldova,FALSE
+630336,en,EU,Europe,BY,Belarus,FALSE
+660013,en,EU,Europe,FI,Finland,FALSE
+661882,en,EU,Europe,AX,Åland,FALSE
+690791,en,EU,Europe,UA,Ukraine,FALSE
+718075,en,EU,Europe,MK,Macedonia,FALSE
+719819,en,EU,Europe,HU,Hungary,FALSE
+732800,en,EU,Europe,BG,Bulgaria,FALSE
+783754,en,EU,Europe,AL,Albania,FALSE
+798544,en,EU,Europe,PL,Poland,FALSE
+798549,en,EU,Europe,RO,Romania,FALSE
+831053,en,EU,Europe,XK,Kosovo,FALSE
+878675,en,AF,Africa,ZW,Zimbabwe,FALSE
+895949,en,AF,Africa,ZM,Zambia,FALSE
+921929,en,AF,Africa,KM,Comoros,FALSE
+927384,en,AF,Africa,MW,Malawi,FALSE
+932692,en,AF,Africa,LS,Lesotho,FALSE
+933860,en,AF,Africa,BW,Botswana,FALSE
+934292,en,AF,Africa,MU,Mauritius,FALSE
+934841,en,AF,Africa,SZ,Swaziland,FALSE
+935317,en,AF,Africa,RE,Réunion,FALSE
+953987,en,AF,Africa,ZA,South Africa,FALSE
+1024031,en,AF,Africa,YT,Mayotte,FALSE
+1036973,en,AF,Africa,MZ,Mozambique,FALSE
+1062947,en,AF,Africa,MG,Madagascar,FALSE
+1149361,en,AS,Asia,AF,Afghanistan,FALSE
+1168579,en,AS,Asia,PK,Pakistan,FALSE
+1210997,en,AS,Asia,BD,Bangladesh,FALSE
+1218197,en,AS,Asia,TM,Turkmenistan,FALSE
+1220409,en,AS,Asia,TJ,Tajikistan,FALSE
+1227603,en,AS,Asia,LK,Sri Lanka,FALSE
+1252634,en,AS,Asia,BT,Bhutan,FALSE
+1269750,en,AS,Asia,IN,India,FALSE
+1282028,en,AS,Asia,MV,Maldives,FALSE
+1282588,en,AS,Asia,IO,British Indian Ocean Territory,FALSE
+1282988,en,AS,Asia,NP,Nepal,FALSE
+1327865,en,AS,Asia,MM,Myanmar [Burma],FALSE
+1512440,en,AS,Asia,UZ,Uzbekistan,FALSE
+1522867,en,AS,Asia,KZ,Kazakhstan,FALSE
+1527747,en,AS,Asia,KG,Kyrgyzstan,FALSE
+1546748,en,AN,Antarctica,TF,French Southern Territories,FALSE
+1547376,en,AS,Asia,CC,Cocos [Keeling] Islands,FALSE
+1559582,en,OC,Oceania,PW,Palau,FALSE
+1562822,en,AS,Asia,VN,Vietnam,FALSE
+1605651,en,AS,Asia,TH,Thailand,FALSE
+1643084,en,AS,Asia,ID,Indonesia,FALSE
+1655842,en,AS,Asia,LA,Laos,FALSE
+1668284,en,AS,Asia,TW,Taiwan,FALSE
+1694008,en,AS,Asia,PH,Philippines,FALSE
+1733045,en,AS,Asia,MY,Malaysia,FALSE
+1814991,en,AS,Asia,CN,China,FALSE
+1819730,en,AS,Asia,HK,Hong Kong,FALSE
+1820814,en,AS,Asia,BN,Brunei,FALSE
+1821275,en,AS,Asia,MO,Macao,FALSE
+1831722,en,AS,Asia,KH,Cambodia,FALSE
+1835841,en,AS,Asia,KR,Republic of Korea,FALSE
+1861060,en,AS,Asia,JP,Japan,FALSE
+1873107,en,AS,Asia,KP,North Korea,FALSE
+1880251,en,AS,Asia,SG,Singapore,FALSE
+1899402,en,OC,Oceania,CK,Cook Islands,FALSE
+1966436,en,OC,Oceania,TL,East Timor,FALSE
+2017370,en,EU,Europe,RU,Russia,FALSE
+2029969,en,AS,Asia,MN,Mongolia,FALSE
+2077456,en,OC,Oceania,AU,Australia,FALSE
+2078138,en,AS,Asia,CX,Christmas Island,FALSE
+2080185,en,OC,Oceania,MH,Marshall Islands,FALSE
+2081918,en,OC,Oceania,FM,Federated States of Micronesia,FALSE
+2088628,en,OC,Oceania,PG,Papua New Guinea,FALSE
+2103350,en,OC,Oceania,SB,Solomon Islands,FALSE
+2110297,en,OC,Oceania,TV,Tuvalu,FALSE
+2110425,en,OC,Oceania,NR,Nauru,FALSE
+2134431,en,OC,Oceania,VU,Vanuatu,FALSE
+2139685,en,OC,Oceania,NC,New Caledonia,FALSE
+2155115,en,OC,Oceania,NF,Norfolk Island,FALSE
+2186224,en,OC,Oceania,NZ,New Zealand,FALSE
+2205218,en,OC,Oceania,FJ,Fiji,FALSE
+2215636,en,AF,Africa,LY,Libya,FALSE
+2233387,en,AF,Africa,CM,Cameroon,FALSE
+2245662,en,AF,Africa,SN,Senegal,FALSE
+2260494,en,AF,Africa,CG,Republic of the Congo,FALSE
+2264397,en,EU,Europe,PT,Portugal,FALSE
+2275384,en,AF,Africa,LR,Liberia,FALSE
+2287781,en,AF,Africa,CI,Ivory Coast,FALSE
+2300660,en,AF,Africa,GH,Ghana,FALSE
+2309096,en,AF,Africa,GQ,Equatorial Guinea,FALSE
+2328926,en,AF,Africa,NG,Nigeria,FALSE
+2361809,en,AF,Africa,BF,Burkina Faso,FALSE
+2363686,en,AF,Africa,TG,Togo,FALSE
+2372248,en,AF,Africa,GW,Guinea-Bissau,FALSE
+2378080,en,AF,Africa,MR,Mauritania,FALSE
+2395170,en,AF,Africa,BJ,Benin,FALSE
+2400553,en,AF,Africa,GA,Gabon,FALSE
+2403846,en,AF,Africa,SL,Sierra Leone,FALSE
+2410758,en,AF,Africa,ST,São Tomé and Príncipe,FALSE
+2411586,en,EU,Europe,GI,Gibraltar,FALSE
+2413451,en,AF,Africa,GM,Gambia,FALSE
+2420477,en,AF,Africa,GN,Guinea,FALSE
+2434508,en,AF,Africa,TD,Chad,FALSE
+2440476,en,AF,Africa,NE,Niger,FALSE
+2453866,en,AF,Africa,ML,Mali,FALSE
+2461445,en,AF,Africa,EH,Western Sahara,FALSE
+2464461,en,AF,Africa,TN,Tunisia,FALSE
+2510769,en,EU,Europe,ES,Spain,FALSE
+2542007,en,AF,Africa,MA,Morocco,FALSE
+2562770,en,EU,Europe,MT,Malta,FALSE
+2589581,en,AF,Africa,DZ,Algeria,FALSE
+2622320,en,EU,Europe,FO,Faroe Islands,FALSE
+2623032,en,EU,Europe,DK,Denmark,FALSE
+2629691,en,EU,Europe,IS,Iceland,FALSE
+2635167,en,EU,Europe,GB,United Kingdom,FALSE
+2658434,en,EU,Europe,CH,Switzerland,FALSE
+2661886,en,EU,Europe,SE,Sweden,FALSE
+2750405,en,EU,Europe,NL,Netherlands,FALSE
+2782113,en,EU,Europe,AT,Austria,FALSE
+2802361,en,EU,Europe,BE,Belgium,FALSE
+2921044,en,EU,Europe,DE,Germany,FALSE
+2960313,en,EU,Europe,LU,Luxembourg,FALSE
+2963597,en,EU,Europe,IE,Ireland,FALSE
+2993457,en,EU,Europe,MC,Monaco,FALSE
+3017382,en,EU,Europe,FR,France,FALSE
+3041565,en,EU,Europe,AD,Andorra,FALSE
+3042058,en,EU,Europe,LI,Liechtenstein,FALSE
+3042142,en,EU,Europe,JE,Jersey,FALSE
+3042225,en,EU,Europe,IM,Isle of Man,FALSE
+3042362,en,EU,Europe,GG,Guernsey,FALSE
+3057568,en,EU,Europe,SK,Slovakia,FALSE
+3077311,en,EU,Europe,CZ,Czech Republic,FALSE
+3144096,en,EU,Europe,NO,Norway,FALSE
+3164670,en,EU,Europe,VA,Vatican City,FALSE
+3168068,en,EU,Europe,SM,San Marino,FALSE
+3175395,en,EU,Europe,IT,Italy,FALSE
+3190538,en,EU,Europe,SI,Slovenia,FALSE
+3194884,en,EU,Europe,ME,Montenegro,FALSE
+3202326,en,EU,Europe,HR,Croatia,FALSE
+3277605,en,EU,Europe,BA,Bosnia and Herzegovina,FALSE
+3351879,en,AF,Africa,AO,Angola,FALSE
+3355338,en,AF,Africa,NA,Namibia,FALSE
+3370751,en,AF,Africa,SH,Saint Helena,FALSE
+3374084,en,NA,North America,BB,Barbados,FALSE
+3374766,en,AF,Africa,CV,Cape Verde,FALSE
+3378535,en,SA,South America,GY,Guyana,FALSE
+3381670,en,SA,South America,GF,French Guiana,FALSE
+3382998,en,SA,South America,SR,Suriname,FALSE
+3424932,en,NA,North America,PM,Saint Pierre and Miquelon,FALSE
+3425505,en,NA,North America,GL,Greenland,FALSE
+3437598,en,SA,South America,PY,Paraguay,FALSE
+3439705,en,SA,South America,UY,Uruguay,FALSE
+3469034,en,SA,South America,BR,Brazil,FALSE
+3474414,en,SA,South America,FK,Falkland Islands,FALSE
+3474415,en,AN,Antarctica,GS,South Georgia and the South Sandwich Islands,FALSE
+3489940,en,NA,North America,JM,Jamaica,FALSE
+3508796,en,NA,North America,DO,Dominican Republic,FALSE
+3562981,en,NA,North America,CU,Cuba,FALSE
+3570311,en,NA,North America,MQ,Martinique,FALSE
+3572887,en,NA,North America,BS,Bahamas,FALSE
+3573345,en,NA,North America,BM,Bermuda,FALSE
+3573511,en,NA,North America,AI,Anguilla,FALSE
+3573591,en,NA,North America,TT,Trinidad and Tobago,FALSE
+3575174,en,NA,North America,KN,Saint Kitts and Nevis,FALSE
+3575830,en,NA,North America,DM,Dominica,FALSE
+3576396,en,NA,North America,AG,Antigua and Barbuda,FALSE
+3576468,en,NA,North America,LC,Saint Lucia,FALSE
+3576916,en,NA,North America,TC,Turks and Caicos Islands,FALSE
+3577279,en,NA,North America,AW,Aruba,FALSE
+3577718,en,NA,North America,VG,British Virgin Islands,FALSE
+3577815,en,NA,North America,VC,Saint Vincent and the Grenadines,FALSE
+3578097,en,NA,North America,MS,Montserrat,FALSE
+3578421,en,NA,North America,MF,Saint Martin,FALSE
+3578476,en,NA,North America,BL,Saint-Barthélemy,FALSE
+3579143,en,NA,North America,GP,Guadeloupe,FALSE
+3580239,en,NA,North America,GD,Grenada,FALSE
+3580718,en,NA,North America,KY,Cayman Islands,FALSE
+3582678,en,NA,North America,BZ,Belize,FALSE
+3585968,en,NA,North America,SV,El Salvador,FALSE
+3595528,en,NA,North America,GT,Guatemala,FALSE
+3608932,en,NA,North America,HN,Honduras,FALSE
+3617476,en,NA,North America,NI,Nicaragua,FALSE
+3624060,en,NA,North America,CR,Costa Rica,FALSE
+3625428,en,SA,South America,VE,Venezuela,FALSE
+3658394,en,SA,South America,EC,Ecuador,FALSE
+3686110,en,SA,South America,CO,Colombia,FALSE
+3703430,en,NA,North America,PA,Panama,FALSE
+3723988,en,NA,North America,HT,Haiti,FALSE
+3865483,en,SA,South America,AR,Argentina,FALSE
+3895114,en,SA,South America,CL,Chile,FALSE
+3923057,en,SA,South America,BO,Bolivia,FALSE
+3932488,en,SA,South America,PE,Peru,FALSE
+3996063,en,NA,North America,MX,Mexico,FALSE
+4030656,en,OC,Oceania,PF,French Polynesia,FALSE
+4030699,en,OC,Oceania,PN,Pitcairn Islands,FALSE
+4030945,en,OC,Oceania,KI,Kiribati,FALSE
+4031074,en,OC,Oceania,TK,Tokelau,FALSE
+4032283,en,OC,Oceania,TO,Tonga,FALSE
+4034749,en,OC,Oceania,WF,Wallis and Futuna,FALSE
+4034894,en,OC,Oceania,WS,Samoa,FALSE
+4036232,en,OC,Oceania,NU,Niue,FALSE
+4041468,en,OC,Oceania,MP,Northern Mariana Islands,FALSE
+4043988,en,OC,Oceania,GU,Guam,FALSE
+4566966,en,NA,North America,PR,Puerto Rico,FALSE
+4796775,en,NA,North America,VI,U.S. Virgin Islands,FALSE
+5854968,en,OC,Oceania,UM,U.S. Minor Outlying Islands,FALSE
+5880801,en,OC,Oceania,AS,American Samoa,FALSE
+6251999,en,NA,North America,CA,Canada,FALSE
+6252001,en,NA,North America,US,United States,FALSE
+6254930,en,AS,Asia,PS,Palestine,FALSE
+6255147,en,AS,Asia,,,FALSE
+6255148,en,EU,Europe,,,FALSE
+6290252,en,EU,Europe,RS,Serbia,FALSE
+6697173,en,AN,Antarctica,AQ,Antarctica,FALSE
+7609695,en,NA,North America,SX,Sint Maarten,FALSE
+7626836,en,NA,North America,CW,Curaçao,FALSE
+7626844,en,NA,North America,BQ,Bonaire,FALSE
+7909807,en,AF,Africa,SS,South Sudan,FALSE
