@@ -1,6 +1,4 @@
 # Proxy Application with Go
-[![golangci-lint](https://github.com/MmGhobadi/CSCE_5585_Proxy/actions/workflows/golangci-lint.yml/badge.svg?branch=main)](https://github.com/MmGhobadi/CSCE_5585_Proxy/actions/workflows/golangci-lint.yml)
-![Coverage](https://img.shields.io/badge/Coverage-81.3%25-brightgreen)
 
 This project implements a simple Proxy Application in Go, providing features such as basic firewall functionality, rate limiting, geo-blocking, logging, and a web-based user interface.
 
@@ -63,6 +61,19 @@ The Proxy Application includes the following features:
     ```bash
     go mod download
     ```
+Or you can run it with Docker:
+
+1. 
+    ```bash
+    docker build -t firewall .
+    ```
+
+2. 
+    ```bash
+    docker run --publish 8000:8000 --cap-add=NET_ADMIN firewall
+    ```
+3. Open localhost:8000 by your browser
+
 
 ## Usage (Root permission needed)
 
