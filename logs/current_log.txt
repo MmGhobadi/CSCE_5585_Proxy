@@ -1,0 +1,1 @@
+[2023-12-10 14:55:57.904411426 -0600 CST m=+5.455213290] Blocked traffic from 192.168.0.10 to <nil>: Rate limited traffic from IP 192.168.0.10: 1 requests per 1m0s

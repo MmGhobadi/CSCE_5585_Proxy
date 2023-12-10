@@ -62,6 +62,16 @@ func StartWebUI(firewall *myFirewall.Firewall) {
 		return geoBlockHandler(c, firewall)
 	})
 
+	// A new route for geo-blocking an IP
+	app.Post("/geo-unblock", func(c *fiber.Ctx) error {
+		return geoUnBlockHandler(c, firewall)
+	})
+
+	// A new route for geo-blocking an IP
+	app.Get("/geo-list", func(c *fiber.Ctx) error {
+		return geoCountryListHandler(c, firewall)
+	})
+
 	// A new route for bandwidth-usage
 	app.Get("/bandwidth-usage", func(c *fiber.Ctx) error {
 		return displayBandwidthUsageHandler(c, firewall)

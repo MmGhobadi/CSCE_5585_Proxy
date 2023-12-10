@@ -1,6 +1,7 @@
 package firewall
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
 	"net"
@@ -348,44 +349,33 @@ func TestFirewall_RotateLogs(t *testing.T) {
 }
 
 func TestFirewall_RateLimitIP(t *testing.T) {
-
 	interfaceName := "wlp0s20f3"
-
 	firewall, err := NewFirewall(interfaceName)
 	assert.Nil(t, err)
 
-	ip := net.ParseIP("192.168.0.1")
-	limit := 10
+	ip := net.ParseIP("192.168.0.10")
+	limit := 1
 	duration := 1 * time.Minute
 
 	// Test rate limiting after the limit is exceeded
 	result := firewall.RateLimitIP(ip, limit, duration)
 	assert.False(t, result)
 
+	// Test rate limiting before the limit is exceeded
+	for i := 0; i < limit-1; i++ {
+		result = firewall.RateLimitIP(ip, limit, duration)
+		assert.False(t, result)
+	}
+
+	// Test rate limiting after the limit is exceeded
+	result = firewall.RateLimitIP(ip, limit, duration)
+	assert.True(t, result)
+
+	// Test rate limiting for a different IP
+	anotherIP := net.ParseIP("192.168.0.2")
+	result = firewall.RateLimitIP(anotherIP, limit, duration)
+	assert.False(t, result)
 }
-
-// func TestFirewall_GeoBlock(t *testing.T) {
-
-// 	interfaceName := "wlp0s20f3"
-
-// 	firewall, err := NewFirewall(interfaceName)
-// 	assert.Nil(t, err)
-
-// 	ip := net.ParseIP("192.168.0.1")
-// 	reason := "Blocked for testing"
-
-// 	// Perform GeoBlock
-// 	result := firewall.GeoBlock(ip, reason)
-// 	assert.False(t, result)
-
-// 	result = firewall.GeoBlock(nil, reason)
-// 	assert.False(t, result)
-
-// 	ip = net.ParseIP("172.217.164.110")
-// 	result = firewall.GeoBlock(ip, reason)
-// 	assert.True(t, result)
-
-// }
 func TestFirewall_IsBlockedCountry(t *testing.T) {
 
 	interfaceName := "wlp0s20f3"
@@ -395,13 +385,24 @@ func TestFirewall_IsBlockedCountry(t *testing.T) {
 
 	// Test with a blocked country
 	// countryCode := "CN"
-	result := firewall.isBlockedCountry("192.168.0.1")
+	result, err := firewall.isBlockedCountry("192.168.0.1")
+	assert.Nil(t, err)
 	assert.False(t, result)
 
 	// Test with a non-blocked country
 	// countryCode = "US"
-	result = firewall.isBlockedCountry("192.168.0.2")
+	result, err = firewall.isBlockedCountry("192.168.0.2")
+	assert.Nil(t, err)
 	assert.False(t, result)
+
+	result, err = firewall.isBlockedCountry("-1")
+	assert.NotEmpty(t, err)
+	assert.True(t, result)
+
+	firewall.db_path = "/wrong/"
+	result, err = firewall.isBlockedCountry("192.168.0.2")
+	assert.NotEmpty(t, err)
+	assert.True(t, result)
 }
 
 func TestFirewall_updateTrafficCounters(t *testing.T) {
@@ -546,4 +547,116 @@ func TestSaveLog(t *testing.T) {
 
 	// Verify that the in_out_log slice is reset and only contains the latest log
 	assert.Equal(t, []string{packageLog}, in_out_log)
+}
+func TestFirewall_GetBlockedCountries(t *testing.T) {
+
+	interfaceName := "wlp0s20f3"
+	firewall, err := NewFirewall(interfaceName)
+	assert.Nil(t, err)
+
+	// Call the GetBlockedCountries method
+	countryList, err := firewall.GetBlockedCountries()
+	// Verify the results
+	assert.Nil(t, err)
+	assert.IsType(t, []string{}, countryList)
+
+	err = firewall.GeoBlock("United States")
+	assert.Nil(t, err)
+	countryList, err = firewall.GetBlockedCountries()
+	assert.Nil(t, err)
+	assert.NotEqual(t, []string{}, countryList)
+
+	err = firewall.GeoUnBlock("United States")
+	assert.Nil(t, err)
+
+}
+func TestFirewall_GetGeoCountryList(t *testing.T) {
+	interfaceName := "wlp0s20f3"
+	firewall, err := NewFirewall(interfaceName)
+	assert.Nil(t, err)
+
+	// Test case 1: Valid database path
+	expectedCountryList, err := firewall.GetGeoCountryList()
+	assert.Nil(t, err)
+	assert.NotEmpty(t, expectedCountryList)
+
+	// Test case 2: Invalid database path
+	firewall.db_path = "/wrong/"
+	expectedCountryList, err = firewall.GetGeoCountryList()
+	assert.NotEmpty(t, err)
+	assert.Nil(t, expectedCountryList)
+
+	// Test case 3: Empty database path
+	firewall.db_path = ""
+	expectedCountryList, err = firewall.GetGeoCountryList()
+	assert.NotEmpty(t, err)
+	assert.Nil(t, expectedCountryList)
+
+	// Test case 4: Non-existent database file
+	firewall.db_path = "/path/to/nonexistent/file"
+	expectedCountryList, err = firewall.GetGeoCountryList()
+	assert.NotEmpty(t, err)
+	assert.Nil(t, expectedCountryList)
+}
+func TestFirewall_GeoUnBlock(t *testing.T) {
+	interfaceName := "wlp0s20f3"
+	firewall, err := NewFirewall(interfaceName)
+	assert.Nil(t, err)
+
+	countryName := "United States"
+
+	err = firewall.GeoUnBlock(countryName)
+	assert.Nil(t, err)
+
+	// Verify that the file has been updated correctly
+	readFile, err := os.Open(firewall.db_path + "GeoLite2-Country-Locations-en.csv")
+	assert.Nil(t, err)
+	defer readFile.Close()
+
+	reader := csv.NewReader(readFile)
+	records, err := reader.ReadAll()
+	assert.Nil(t, err)
+
+	for _, record := range records {
+		if record[5] == countryName {
+			assert.Equal(t, "FALSE", record[6])
+		}
+	}
+	firewall.db_path = "/wrong/"
+	err = firewall.GeoUnBlock(countryName)
+	assert.NotEmpty(t, err)
+}
+func TestFirewall_GeoBlock(t *testing.T) {
+	interfaceName := "wlp0s20f3"
+	firewall, err := NewFirewall(interfaceName)
+	assert.Nil(t, err)
+
+	countryName := "United States"
+
+	err = firewall.GeoBlock(countryName)
+	assert.Nil(t, err)
+
+	// Verify that the file was written correctly
+	filePath := firewall.db_path + "GeoLite2-Country-Locations-en.csv"
+	file, err := os.Open(filePath)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, file)
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	assert.Nil(t, err)
+
+	for _, record := range records {
+		if record[5] == countryName {
+			assert.Equal(t, "TRUE", record[6])
+		}
+	}
+	err = firewall.GeoUnBlock(countryName)
+	assert.Nil(t, err)
+
+	firewall.db_path = "/wrong/"
+	err = firewall.GeoBlock(countryName)
+	assert.NotEmpty(t, err)
+
 }

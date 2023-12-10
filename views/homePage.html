@@ -26,7 +26,7 @@
                     </button>
                 </div>
             </form>
-            <div id="ip-blocked"></div>
+            <div class="mb-4 rounded-lg px-6 py-5 text-base text-primary-600" role="alert"  id="ip-blocked"></div>
         </div>
 
         <!-- Column -->
@@ -45,7 +45,7 @@
                     </button>
                 </div>
             </form>
-            <div id="port-blocked"></div>
+            <div class="mb-4 rounded-lg px-6 py-5 text-base text-primary-600" role="alert"  id="port-blocked"></div>
         </div>
         <!-- Column -->
         <div class="col-span-12 md:col-span-6 xl:col-span-4">
@@ -60,7 +60,34 @@
                         class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Unblock</button>
                 </div>
             </form>
-            <div id="protocol-blocked"></div>
+            <div class="mb-4 rounded-lg px-6 py-5 text-base text-primary-600" role="alert"  id="protocol-blocked"></div>
+        </div>
+
+        <!-- Column -->
+        <div class="col-span-12 md:col-span-6 xl:col-span-4">
+            <h1 class="text-2xl font-bold mb-4">Block/Unblock Country</h1>
+            <form class="flex flex-col space-y-2" hx-post="/geo-block" hx-target="#geo-blocked">
+                <label for="protocol" class="font-bold">Country:</label>
+                <div class="relative" data-te-input-wrapper-init id="basic">
+                    <input
+                      type="text"
+                      class="peer block min-h-[auto] w-full rounded border-0 bg-transparent px-3 py-[0.32rem] leading-[1.6] outline-none transition-all duration-200 ease-linear placeholder:opacity-0 focus:placeholder:opacity-100 peer-focus:text-primary motion-reduce:transition-none dark:text-neutral-200 dark:placeholder:text-neutral-200 dark:peer-focus:text-primary"
+                      id="countryName"
+                      name="countryName" />
+                    <label
+                      for="countryName"
+                      class="pointer-events-none absolute left-3 top-0 mb-0 max-w-[80%] origin-[0_0] truncate pt-[0.37rem] leading-[1.6] text-neutral-500 transition-all duration-200 ease-out peer-focus:-translate-y-[0.9rem] peer-focus:scale-[0.8] peer-focus:text-primary peer-data-[te-input-focused]:-translate-y-[0.9rem] peer-data-[te-input-state-active]:-translate-y-[0.9rem] peer-data-[te-input-focused]:scale-[0.8] peer-data-[te-input-state-active]:scale-[0.8] motion-reduce:transition-none dark:text-neutral-200 dark:peer-focus:text-primary"
+                      >Country list
+                    </label>
+                  </div>
+                <div class="flex space-x-2">
+                    <button type="submit"
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Block</button>
+                    <button type="submit" hx-post="/geo-unblock" hx-target="#geo-blocked"
+                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Unblock</button>
+                </div>
+            </form>
+            <div class="mb-4 rounded-lg px-6 py-5 text-base text-primary-600" role="alert"  id="geo-blocked"></div>
         </div>
         <!-- Column -->
         <div class="col-span-12 md:col-span-6 xl:col-span-4">
@@ -74,6 +101,7 @@
                 <button type="submit"
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Save</button>
             </form>
+            <div class="mb-4 rounded-lg px-6 py-5 text-base text-primary-600" role="alert" id="rate-limited"></div>
         </div>
         <!-- Column -->
         <div class="col-span-12 md:col-span-12 xl:col-span-12">

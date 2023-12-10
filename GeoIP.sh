@@ -1,7 +1,7 @@
 sudo apt-get update; sudo apt-get -y upgrade
-sudo apt-get install curl unzip perl
-sudo apt-get install xtables-addons-common
-sudo apt-get install libtext-csv-xs-perl libmoosex-types-netaddr-ip-perl
+sudo apt-get -y install curl unzip perl
+sudo apt-get -y install xtables-addons-common
+sudo apt-get -y install libtext-csv-xs-perl libmoosex-types-netaddr-ip-perl
 
 MON=$(date +"%m")
 YR=$(date +"%Y")

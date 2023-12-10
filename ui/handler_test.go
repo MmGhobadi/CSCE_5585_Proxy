@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"net"
@@ -203,16 +204,22 @@ func TestUnblockProtocolHandler(t *testing.T) {
 }
 
 func TestDisplayBandwidthUsageHandler(t *testing.T) {
+
 	firewall := getFirewall()
 	app := fiber.New()
-	app.Get("/display-bandwidth-usage", func(c *fiber.Ctx) error {
+	app.Get("/bandwidth-usage", func(c *fiber.Ctx) error {
 		return displayBandwidthUsageHandler(c, firewall)
 	})
 
-	request := httptest.NewRequest(http.MethodGet, "/display-bandwidth-usage", nil)
+	request := httptest.NewRequest(http.MethodGet, "/bandwidth-usage", nil)
 	response, err := app.Test(request)
 	assert.Nil(t, err)
 	assert.Equal(t, http.StatusOK, response.StatusCode)
+
+	// Check the response body
+	body, err := io.ReadAll(response.Body)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, body)
 
 }
 
@@ -256,23 +263,23 @@ func TestGeoBlockHandler(t *testing.T) {
 		return geoBlockHandler(c, firewall)
 	})
 
-	request := httptest.NewRequest(http.MethodPost, "/geo-block", strings.NewReader("ip=127.0.0.1"))
+	request := httptest.NewRequest(http.MethodPost, "/geo-block", strings.NewReader("countryName=Iraq"))
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	response, err := app.Test(request)
 	assert.Nil(t, err)
 	assert.Equal(t, http.StatusOK, response.StatusCode)
 	body, err := io.ReadAll(response.Body)
 	assert.Nil(t, err)
-	assert.Equal(t, "Blocked traffic from IP 127.0.0.1 based on geo-location", string(body))
+	assert.Equal(t, "Blocked traffic from Iraq geo-location", string(body))
 
-	request = httptest.NewRequest(http.MethodPost, "/geo-block", strings.NewReader("ip="))
+	request = httptest.NewRequest(http.MethodPost, "/geo-block", strings.NewReader("countryName="))
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	response, err = app.Test(request)
 	assert.Nil(t, err)
 	assert.Equal(t, http.StatusBadRequest, response.StatusCode)
 	body, err = io.ReadAll(response.Body)
 	assert.Nil(t, err)
-	assert.Equal(t, "Invalid IP address format", string(body))
+	assert.Equal(t, "Invalid Country Name format", string(body))
 
 }
 
@@ -321,4 +328,53 @@ func TestNotFound(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, http.StatusInternalServerError, response.StatusCode)
 
+}
+func TestGeoUnBlockHandler(t *testing.T) {
+	firewall := getFirewall()
+	app := fiber.New()
+	app.Post("/geo-unblock", func(c *fiber.Ctx) error {
+		return geoUnBlockHandler(c, firewall)
+	})
+
+	request := httptest.NewRequest(http.MethodPost, "/geo-unblock", strings.NewReader("countryName=Iraq"))
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	response, err := app.Test(request)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+	body, err := io.ReadAll(response.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, "Unblocked traffic from Iraq geo-location", string(body))
+
+	request = httptest.NewRequest(http.MethodPost, "/geo-unblock", strings.NewReader("countryName="))
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	response, err = app.Test(request)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusBadRequest, response.StatusCode)
+	body, err = io.ReadAll(response.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, "Invalid Country Name format", string(body))
+}
+func TestGeoCountryListHandler(t *testing.T) {
+	firewall := getFirewall()
+	app := fiber.New()
+	app.Get("/geo-country-list", func(c *fiber.Ctx) error {
+		return geoCountryListHandler(c, firewall)
+	})
+
+	request := httptest.NewRequest(http.MethodGet, "/geo-country-list", nil)
+	response, err := app.Test(request)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, response.StatusCode)
+
+	// Check the response body
+	body, err := io.ReadAll(response.Body)
+	assert.Nil(t, err)
+
+	// Parse the response body
+	var result fiber.Map
+	err = json.Unmarshal(body, &result)
+	assert.Nil(t, err)
+
+	assert.NotNil(t, result["countryList"])
+	assert.NotEmpty(t, result["countryList"])
 }

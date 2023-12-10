@@ -163,16 +163,44 @@ func rateLimitIPHandler(c *fiber.Ctx, firewall *myFirewall.Firewall) error {
 
 func geoBlockHandler(c *fiber.Ctx, firewall *myFirewall.Firewall) error {
 	// Parse the user-provided IP from the request body
-	ipStr := c.FormValue("ip")
-	ip := net.ParseIP(ipStr)
-	if ip == nil {
-		return c.Status(fiber.StatusBadRequest).SendString("Invalid IP address format")
+	countryName := c.FormValue("countryName")
+	if countryName == "" {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid Country Name format")
 	}
 
-	// // Geo-block the specified IP using the Firewall
-	// firewall.GeoBlock(ip, "Blocked via web UI")
+	// Geo-block the specified country using the Firewall
+	err := firewall.GeoBlock(countryName)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("There is some error in blocking country")
+	}
 
-	return c.SendString(fmt.Sprintf("Blocked traffic from IP %s based on geo-location", ip))
+	return c.SendString(fmt.Sprintf("Blocked traffic from %s geo-location", countryName))
+}
+
+func geoUnBlockHandler(c *fiber.Ctx, firewall *myFirewall.Firewall) error {
+	// Parse the user-provided IP from the request body
+	countryName := c.FormValue("countryName")
+	if countryName == "" {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid Country Name format")
+	}
+
+	// Geo-block the specified country using the Firewall
+	err := firewall.GeoUnBlock(countryName)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("There is some error in unblocking country")
+	}
+
+	return c.SendString(fmt.Sprintf("Unblocked traffic from %s geo-location", countryName))
+}
+
+func geoCountryListHandler(c *fiber.Ctx, firewall *myFirewall.Firewall) error {
+
+	countryList, err := firewall.GetGeoCountryList()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Error in getting country list")
+	}
+
+	return c.JSON(fiber.Map{"countryList": countryList})
 }
 
 func homeHandler(c *fiber.Ctx) error {

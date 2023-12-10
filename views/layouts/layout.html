@@ -24,9 +24,9 @@
                 preflight: false,
             },
         };
-        
 
-        
+
+
 
     </script>
 
@@ -45,22 +45,22 @@
         var usageLabel = []
         var usageSize = []
         const myBarChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: usageLabel,
-            datasets: [{
-              label: 'Bandwidth Usage: ',
-              data: usageSize,
-              borderWidth: 1
-            }]
-          },
-          options: {
-            scales: {
-              y: {
-                beginAtZero: true
-              }
+            type: 'bar',
+            data: {
+                labels: usageLabel,
+                datasets: [{
+                    label: 'Bandwidth Usage: ',
+                    data: usageSize,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
             }
-          }
         });
 
         function getBandwidthUsage() {
@@ -89,9 +89,44 @@
         }
 
         var myInterval = setInterval(getBandwidthUsage, 1000);
-      
-        
-      </script>
+
+        function getCountryList() {
+            // Define the API URL
+            const apiUrl = '/geo-list';
+
+            // Make a GET request
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const country_list_data = data.countryList;
+
+                    const dataFilter = (value) => {
+                        return country_list_data.filter((item) => {
+                            return item.toLowerCase().startsWith(value.toLowerCase());
+                        });
+                    };
+
+                    const basicAutocomplete = document.querySelector('#basic');
+
+                    new te.Autocomplete(basicAutocomplete, {
+                        filter: dataFilter,
+                    });
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        getCountryList() 
+
+
+    </script>
 
 </body>
 

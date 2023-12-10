@@ -178,18 +178,25 @@ func (f *Firewall) handlePacket(packet gopacket.Packet) {
 	if slices.Contains(f.interfaceIPs, _sourceIP) {
 		direction = "outgoing"
 	}
-	saveLog(fmt.Sprintf("[%s] %s:%s -> %s:%s (%s) - %s\n", direction, srcIP, srcPort, dstIP, dstPort, protocol, time.Now().Format("2006-01-02 15:04:0")))
+	// saveLog(fmt.Sprintf("[%s] %s:%s -> %s:%s (%s) - %s\n", direction, srcIP, srcPort, dstIP, dstPort, protocol, time.Now().Format("2006-01-02 15:04:0")))
 
 	// log.Printf("[%s] %s:%s -> %s:%s (%s) - %s\n", direction, srcIP, srcPort, dstIP, dstPort, protocol, time.Now().Format(time.RFC3339))
 
+	isBlocked, err := f.isBlockedCountry(srcIP)
+	if err != nil {
+		log.Printf("Error Geo block cheker: %s\n", err.Error())
+	}
 	// Example: Block packets from a specific country
-	if f.isBlockedCountry(srcIP) {
+	if isBlocked {
 		f.ruleBlockCounters["CountryBlock"]++
+		saveLog(fmt.Sprintf("[%s] ***Dropping packet from blocked country*** %s:%s -> %s:%s (%s) - %s\n", direction, srcIP, srcPort, dstIP, dstPort, protocol, time.Now().Format("2006-01-02 15:04:0")))
 		return
+	} else {
+		saveLog(fmt.Sprintf("[%s] %s:%s -> %s:%s (%s) - %s\n", direction, srcIP, srcPort, dstIP, dstPort, protocol, time.Now().Format("2006-01-02 15:04:0")))
 	}
 
 	// Update counters for traffic breakdown
-	err := f.updateTrafficCounters(srcIP, dstIP, protocol)
+	err = f.updateTrafficCounters(srcIP, dstIP, protocol)
 	if err != nil {
 		log.Printf("Error updating traffic counters: %s\n", err.Error())
 	}
@@ -387,11 +394,14 @@ func (f *Firewall) UnblockProtocol(protocol string) (string, error) {
 
 // Allows dynamic rate limiting for each IP
 func (f *Firewall) RateLimitIP(ip net.IP, limit int, duration time.Duration) bool {
+
 	// Check if a rate limiter already exists for the given IP
 	limiter, exists := f.rateLimiter[ip.String()]
+	println(limiter, exists)
 	if !exists {
 		// If not, create a new rate limiter with the specified limit and add it to the map
 		limiter = rate.NewLimiter(rate.Limit(limit), 1)
+		println(limiter)
 		f.rateLimiter[ip.String()] = limiter
 	}
 
@@ -418,7 +428,7 @@ func (f *Firewall) GetBlockedCountries() ([]string, error) {
 
 	// Checks for the error
 	if err != nil {
-		log.Fatal("Error while reading the file", err.Error())
+		log.Println("Error while reading the file", err.Error())
 		return nil, err
 	}
 
@@ -450,41 +460,151 @@ func (f *Firewall) GetBlockedCountries() ([]string, error) {
 	return countryList, nil
 }
 
-// func (f *Firewall) GeoBlock(ip net.IP, reason string) bool {
-// 	// Perform GeoIP lookup
-// 	record, err := f.geoDB.Country(ip)
-// 	if err != nil {
-// 		log.Printf("Error performing GeoIP lookup: %s\n", err.Error())
-// 		return false
-// 	}
+func (f *Firewall) GetGeoCountryList() ([]string, error) {
 
-// 	// If the country code is in the blocklist (e.g., "US")
-// 	blocklist, err := f.GetBlockedCountries()
-// 	for _, blockedCode := range blocklist {
-// 		if record.Country.IsoCode == blockedCode {
-// 			// Log the reason for blocking
-// 			fmt.Printf("Blocked traffic from IP %s: Geo-blocked\n", ip)
-// 			// Log the blocked traffic
-// 			err := f.logBlockedTraffic(ip, nil, fmt.Sprintf("Blocked traffic from IP %s based on geo-location: %s", ip, reason))
-// 			if err != nil {
-// 				log.Println(err.Error())
-// 			}
-// 			return true
-// 		}
-// 	}
+	countryList := []string{}
 
-// 	return false
-// }
+	file, err := os.Open(f.db_path + "GeoLite2-Country-Locations-en.csv")
+
+	// Checks for the error
+	if err != nil {
+		log.Println("Error while reading the file", err.Error())
+		return nil, err
+	}
+
+	// Closes the file
+	defer file.Close()
+
+	// from the file
+	reader := csv.NewReader(file)
+
+	// ReadAll reads all the records from the CSV file
+	records, err := reader.ReadAll()
+
+	// Checks for the error
+	if err != nil {
+		fmt.Println("Error reading records")
+		return nil, err
+	}
+
+	// Loop to iterate through
+	for _, record := range records {
+		countryList = append(countryList, record[5])
+	}
+	return countryList, nil
+}
+
+func (f *Firewall) GeoBlock(countryName string) error {
+
+	writeFile, err := os.OpenFile(f.db_path+"GeoLite2-Country-Locations-en.csv", os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println("Error while writting the file", err.Error())
+		return err
+	}
+	defer writeFile.Close()
+
+	readFile, err := os.Open(f.db_path + "GeoLite2-Country-Locations-en.csv")
+
+	// Checks for the error
+	if err != nil {
+		log.Println("Error while reading the file", err.Error())
+		return err
+	}
+
+	// Closes the file
+	defer readFile.Close()
+
+	reader := csv.NewReader(readFile)
+	records, err := reader.ReadAll()
+	if err != nil {
+		fmt.Println("Error reading records")
+		return err
+	}
+
+	var data [][]string
+	// Loop to iterate through
+	for _, record := range records {
+		if record[5] == countryName {
+			record[6] = "TRUE"
+		}
+		row := []string{record[0], record[1], record[2], record[3], record[4], record[5], record[6]}
+		data = append(data, row)
+	}
+
+	w := csv.NewWriter(writeFile)
+	defer w.Flush()
+
+	err = w.WriteAll(data)
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (f *Firewall) GeoUnBlock(countryName string) error {
+
+	writeFile, err := os.OpenFile(f.db_path+"GeoLite2-Country-Locations-en.csv", os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println("Error while writting the file", err.Error())
+		return err
+	}
+	defer writeFile.Close()
+
+	readFile, err := os.Open(f.db_path + "GeoLite2-Country-Locations-en.csv")
+
+	// Checks for the error
+	if err != nil {
+		log.Println("Error while reading the file", err.Error())
+		return err
+	}
+
+	// Closes the file
+	defer readFile.Close()
+
+	reader := csv.NewReader(readFile)
+	records, err := reader.ReadAll()
+	if err != nil {
+		fmt.Println("Error reading records")
+		return err
+	}
+
+	var data [][]string
+	// Loop to iterate through
+	for _, record := range records {
+		if record[5] == countryName {
+			record[6] = "FALSE"
+		}
+		row := []string{record[0], record[1], record[2], record[3], record[4], record[5], record[6]}
+		data = append(data, row)
+	}
+
+	w := csv.NewWriter(writeFile)
+	defer w.Flush()
+
+	err = w.WriteAll(data)
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
 
 // Checks if the source IP belongs to a blocked country
-func (f *Firewall) isBlockedCountry(ip string) bool {
+func (f *Firewall) isBlockedCountry(ip string) (bool, error) {
 	record, err := f.geoDB.Country(net.ParseIP(ip))
 	if err != nil {
 		log.Printf("There is an err %s", err.Error())
-		return false
+		return true, err
 	}
 
 	blocklist, err := f.GetBlockedCountries()
+	if err != nil {
+		log.Printf("There is an err %s", err.Error())
+		return true, err
+	}
 	for _, blockedCode := range blocklist {
 		if record.Country.IsoCode == blockedCode {
 			// Log the reason for blocking
@@ -493,13 +613,14 @@ func (f *Firewall) isBlockedCountry(ip string) bool {
 			err := f.logBlockedTraffic(net.ParseIP(ip), nil, fmt.Sprintf("Blocked traffic from IP %s based on geo-location", ip))
 			if err != nil {
 				log.Println(err.Error())
+				return true, err
 			}
 			log.Printf("Dropping packet from blocked country: %s , IP: %s\n ", record.Country.Names["en"], ip)
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 // Updates counters for traffic breakdown
