@@ -1,6 +1,6 @@
 module github.com/MmGhobadi/CSCE_5585_Proxy
 
-go 1.21.5
+go 1.21
 
 require (
 	github.com/coreos/go-iptables v0.7.0
