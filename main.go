@@ -2,8 +2,9 @@ package main
 
 import (
 	"log"
-	myFirewall "proxy/firewall"
-	myUI "proxy/ui"
+
+	myFirewall "github.com/MmGhobadi/CSCE_5585_Proxy/firewall"
+	myUI "github.com/MmGhobadi/CSCE_5585_Proxy/ui"
 )
 
 func main() {

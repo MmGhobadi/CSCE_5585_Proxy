@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	myFirewall "proxy/firewall"
+	myFirewall "github.com/MmGhobadi/CSCE_5585_Proxy/firewall"
 
 	"github.com/gofiber/fiber/v2"
 )

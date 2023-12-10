@@ -2,7 +2,8 @@ package ui
 
 import (
 	"log"
-	myFirewall "proxy/firewall"
+
+	myFirewall "github.com/MmGhobadi/CSCE_5585_Proxy/firewall"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
